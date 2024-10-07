@@ -20,10 +20,23 @@ public class HibernateDemo {
         math.setId(48);
         math.setName("Math");
 
-        Student student = new Student();
-        student.setId(188);
-        student.setName("Tom");
-        student.setSchoolSubject(List.of(geometry, math));
+        Student studentTom = new Student();
+        studentTom.setId(188);
+        studentTom.setName("Tom");
+        studentTom.setSchoolSubjects(List.of(geometry, math));
+
+        Student studentJean = new Student();
+        studentJean.setId(288);
+        studentJean.setName("Jean");
+        studentJean.setSchoolSubjects(List.of(geometry, math));
+
+        Student studentMark = new Student();
+        studentMark.setId(148);
+        studentMark.setName("Mark");
+        studentMark.setSchoolSubjects(List.of(math));
+
+        geometry.setStudents(List.of(studentTom, studentJean));
+        math.setStudents(List.of(studentTom, studentMark, studentJean));
 
         Configuration configuration = new Configuration()
                 .configure("hibernate.cfg.xml")
@@ -35,14 +48,37 @@ public class HibernateDemo {
 
         Transaction transaction = session.beginTransaction();
 
+        session.persist(studentTom);
+        session.persist(studentJean);
+        session.persist(studentMark);
         session.persist(geometry);
         session.persist(math);
-        session.persist(student);
 
-        Student retrievedStudent = session.get(Student.class, 188);
+        Student retrievedTom = session.get(Student.class, 188);
+        Student retrievedJean = session.get(Student.class, 288);
+        Student retrievedMark = session.get(Student.class, 148);
+
+        SchoolSubject retrievedMath = session.get(SchoolSubject.class, 48);
+        SchoolSubject retrievedGeometry = session.get(SchoolSubject.class, 105);
         transaction.commit();
 
-        System.out.println(retrievedStudent);
+        System.out.println("=== RESULTS ===");
+
+        System.out.println(retrievedTom);
+        System.out.println("Toms school subjects: " + retrievedTom.getSchoolSubjects());
+
+        System.out.println(retrievedJean);
+        System.out.println("Jeans school subjects: " + retrievedJean.getSchoolSubjects());
+
+        System.out.println(retrievedMark);
+        System.out.println("Marks school subjects: " + retrievedMark.getSchoolSubjects());
+
+        System.out.println(retrievedMath);
+        System.out.println("Math students: " + retrievedMath.getStudents());
+        System.out.println(retrievedGeometry);
+        System.out.println("Geometry students: " + retrievedGeometry.getStudents());
+
+        System.out.println("=== END OF RESULTS ===");
 
     }
 }
