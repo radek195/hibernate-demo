@@ -7,17 +7,23 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 
+import java.util.List;
+
 public class HibernateDemo {
     public static void main(String[] args) {
 
-        SchoolSubject schoolSubject = new SchoolSubject();
-        schoolSubject.setId(105);
-        schoolSubject.setName("Geometry");
+        SchoolSubject geometry = new SchoolSubject();
+        geometry.setId(105);
+        geometry.setName("Geometry");
+
+        SchoolSubject math = new SchoolSubject();
+        math.setId(48);
+        math.setName("Math");
 
         Student student = new Student();
         student.setId(188);
         student.setName("Tom");
-        student.setSchoolSubject(schoolSubject);
+        student.setSchoolSubject(List.of(geometry, math));
 
         Configuration configuration = new Configuration()
                 .configure("hibernate.cfg.xml")
@@ -29,12 +35,14 @@ public class HibernateDemo {
 
         Transaction transaction = session.beginTransaction();
 
-        session.persist(schoolSubject);
+        session.persist(geometry);
+        session.persist(math);
         session.persist(student);
 
         Student retrievedStudent = session.get(Student.class, 188);
-        System.out.println(retrievedStudent);
         transaction.commit();
+
+        System.out.println(retrievedStudent);
 
     }
 }
