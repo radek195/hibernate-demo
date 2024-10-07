@@ -43,6 +43,7 @@ public class HibernateDemo {
         transaction.commit();
 
         System.out.println(retrievedStudent);
+        System.out.println(retrievedStudent.getSchoolSubject());
 
     }
 }
