@@ -22,19 +22,65 @@ public class HibernateDemo {
         Session session = sessionFactory.openSession();
         Transaction tx = session.beginTransaction();
 
-        //retrieve list of results
+        //1. retrieve list of results - look into 4.
         Query<CreditCard> query = session.createQuery("from CreditCard", CreditCard.class);
         List<CreditCard> retrievedCreditCards = query.list();
 
-        //retrieve unique result
+        //2. retrieve unique result - look into 4.
         Query<CreditCard> query2 = session.createQuery("from CreditCard where id = 12", CreditCard.class);
         CreditCard retrievedCreditCard = query2.uniqueResult();
+
+        //3. retrieve specific values from unique result - look into 4.
+        Query<Object[]> query3 = session.createQuery("select cvv, issueDateTime from CreditCard where id = 12", Object[].class);
+        Object[] values = query3.uniqueResult();
+
+        //4. retrieve list of results with selectionQuery
+        List<CreditCard> creditCards = session.createSelectionQuery("from CreditCard", CreditCard.class).getResultList();
+
+        //5. retrieve list of results with selectionQuery
+        List<CreditCard> creditCards2 = session
+                .createSelectionQuery("from CreditCard where id = :id", CreditCard.class)
+                .setParameter("id", 14)
+                .getResultList();
+
+        //6. retrieve list of results with selectionQuery
+        CreditCard creditCardUnique = session
+                .createSelectionQuery("from CreditCard where id = :id and cvv = ?1", CreditCard.class)
+                .setParameter("id", 14)
+                .setParameter(1, 481)
+                .getSingleResult();
+
 
         tx.commit();
         session.close();
 
+        //1. result
+        System.out.println("Result 1.");
         retrievedCreditCards.forEach(System.out::println);
+
+        //2. result
+        System.out.println("Result 2.");
         System.out.println("Single card retrieved: " + retrievedCreditCard);
+
+        //3. result
+        System.out.println("Result 3.");
+        for (Object value : values) {
+            System.out.println(value);
+        }
+
+        //4. result
+        System.out.println("4. results");
+        for (CreditCard creditCard : creditCards) {
+            System.out.println(creditCard);
+        }
+
+        //5. result
+        System.out.println("Unique result 5.");
+        System.out.println(creditCards2.get(0));
+
+        //6. result
+        System.out.println("Unique result 6.");
+        System.out.println(creditCardUnique);
     }
 
     private static void setUpFactory() {
