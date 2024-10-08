@@ -5,10 +5,8 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.query.Query;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Random;
 
 public class HibernateDemo {
@@ -22,65 +20,30 @@ public class HibernateDemo {
         Session session = sessionFactory.openSession();
         Transaction tx = session.beginTransaction();
 
-        //1. retrieve list of results - look into 4.
-        Query<CreditCard> query = session.createQuery("from CreditCard", CreditCard.class);
-        List<CreditCard> retrievedCreditCards = query.list();
+        CreditCard creditCard = new CreditCard(); //NEW state
+        creditCard.setId(99); //once values are assigned it is in TRANSIENT state
+        creditCard.setCvv(898);
+        creditCard.setIssueDateTime(LocalDateTime.now());
+        creditCard.setOwnerFullName("Mr John Kowalski");
 
-        //2. retrieve unique result - look into 4.
-        Query<CreditCard> query2 = session.createQuery("from CreditCard where id = 12", CreditCard.class);
-        CreditCard retrievedCreditCard = query2.uniqueResult();
+        session.persist(creditCard); //creditCard goes to PERSISTENT state
+        creditCard.setCvv(444); //creditCard got update in PERSISTENT state so the value 444 is saved to database after commit
 
-        //3. retrieve specific values from unique result - look into 4.
-        Query<Object[]> query3 = session.createQuery("select cvv, issueDateTime from CreditCard where id = 12", Object[].class);
-        Object[] values = query3.uniqueResult();
+        CreditCard creditCard2 = new CreditCard(); //NEW state
+        creditCard2.setId(2222); //once values are assigned it is in TRANSIENT state
+        creditCard2.setCvv(111);
+        creditCard2.setIssueDateTime(LocalDateTime.now());
+        creditCard2.setOwnerFullName("Mrs Ewa Swoboda");
 
-        //4. retrieve list of results with selectionQuery
-        List<CreditCard> creditCards = session.createSelectionQuery("from CreditCard", CreditCard.class).getResultList();
-
-        //5. retrieve list of results with selectionQuery
-        List<CreditCard> creditCards2 = session
-                .createSelectionQuery("from CreditCard where id = :id", CreditCard.class)
-                .setParameter("id", 14)
-                .getResultList();
-
-        //6. retrieve list of results with selectionQuery
-        CreditCard creditCardUnique = session
-                .createSelectionQuery("from CreditCard where id = :id and cvv = ?1", CreditCard.class)
-                .setParameter("id", 14)
-                .setParameter(1, 481)
-                .getSingleResult();
+        session.persist(creditCard2); //creditCard2 goes to PERSISTENT state
+        creditCard.setCvv(676); //creditCard2 got update in PERSISTENT state so the value 444 is saved to database after commit (or?)
+//        session.remove(creditCard2); //this removes object from lifecycle
 
 
         tx.commit();
-        session.close();
+        session.evict(creditCard2); //creditCard2 goes to detached state
+        creditCard2.setCvv(900); //creditCard2 will not be updated in the database to value 90 because it was detached before making a change
 
-        //1. result
-        System.out.println("Result 1.");
-        retrievedCreditCards.forEach(System.out::println);
-
-        //2. result
-        System.out.println("Result 2.");
-        System.out.println("Single card retrieved: " + retrievedCreditCard);
-
-        //3. result
-        System.out.println("Result 3.");
-        for (Object value : values) {
-            System.out.println(value);
-        }
-
-        //4. result
-        System.out.println("4. results");
-        for (CreditCard creditCard : creditCards) {
-            System.out.println(creditCard);
-        }
-
-        //5. result
-        System.out.println("Unique result 5.");
-        System.out.println(creditCards2.get(0));
-
-        //6. result
-        System.out.println("Unique result 6.");
-        System.out.println(creditCardUnique);
     }
 
     private static void setUpFactory() {
